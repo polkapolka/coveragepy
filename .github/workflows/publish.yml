@@ -42,13 +42,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: "Record run id" # zizmor: ignore[template-injection]
+      - name: "Record run id"
         id: run-id
+        env:
+          RUN_STATUS: ${{ fromJson(steps.runs.outputs.data).workflow_runs[0].status }}
+          RUN_CONCLUSION: ${{ fromJson(steps.runs.outputs.data).workflow_runs[0].conclusion }}
+          RUN_ID: ${{ fromJson(steps.runs.outputs.data).workflow_runs[0].id }}
         run: |
           # There must be a shorter way to write this...
-          [ "${{ fromJson(steps.runs.outputs.data).workflow_runs[0].status}}" = "completed" ] || exit 1
-          [ "${{ fromJson(steps.runs.outputs.data).workflow_runs[0].conclusion}}" = "success" ] || exit 1
-          echo "run-id=${{ fromJson(steps.runs.outputs.data).workflow_runs[0].id }}" >> "$GITHUB_OUTPUT"
+          [ "$RUN_STATUS" = "completed" ] || exit 1
+          [ "$RUN_CONCLUSION" = "success" ] || exit 1
+          echo "run-id=$RUN_ID" >> "$GITHUB_OUTPUT"
 
   publish-to-test-pypi:
     name: "Publish to Test PyPI"
